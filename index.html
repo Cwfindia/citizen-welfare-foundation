@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Welfare Foundation</title>
+    <style>
+        /* Modern Royal Blue & Gold Theme */
+        :root {
+            --primary-navy: #0b1d3a;
+            --secondary-navy: #162a45;
+            --accent-gold: #d4af37;
+            --gold-hover: #f3e5ab;
+            --light-bg: #f4f6f9;
+            --text-dark: #1a1a1a;
+            --text-light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--light-bg);
+        }
+
+        /* Header & Navigation */
+        header {
+            background: var(--primary-navy);
+            color: var(--text-light);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+        }
+
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-gold);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(11, 29, 58, 0.85), rgba(11, 29, 58, 0.85)), 
+                        url('https://picsum.photos/1200/600') center/cover no-repeat;
+            height: 75vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--text-light);
+            padding: 0 20px;
+            border-bottom: 4px solid var(--accent-gold);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 650px;
+            margin-bottom: 30px;
+            color: #e0e0e0;
+        }
+
+        .btn {
+            background: var(--accent-gold);
+            color: var(--primary-navy);
+            padding: 12px 32px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--gold-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        .section {
+            padding: 70px 8%;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--primary-navy);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            width: 60%;
+            height: 3px;
+            background: var(--accent-gold);
+            position: absolute;
+            bottom: -8px;
+            left: 20%;
+        }
+
+        .about-text {
+            max-width: 850px;
+            margin: 25px auto 0;
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        /* Stats Bar */
+        .stats {
+            background: var(--primary-navy);
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 45px 5%;
+            text-align: center;
+            border-top: 1px solid var(--accent-gold);
+            border-bottom: 1px solid var(--accent-gold);
+        }
+
+        .stat-item {
+            margin: 15px 0;
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        /* Cards Section */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 35px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-top: 4px solid var(--accent-gold);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+        }
+
+        .card h3 {
+            color: var(--primary-navy);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-navy);
+            color: #b0c4de;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.95rem;
+            border-top: 2px solid var(--accent-gold);
+        }
+
+        footer strong {
+            color: var(--accent-gold);
+        }
+
+        footer p {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header>
+        <div class="logo-container">
+            <!-- Jab aap logo ki image upload karenge, toh yahan path update kar sakte hain -->
+            <div class="logo-text">Citizen Welfare Foundation</div>
+        </div>
+        <nav>
+            <a href="#about">About Us</a>
+            <a href="#work">Our Work</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <h1>Empowering Citizens, Building Nation</h1>
+        <p>Citizen Welfare Foundation is dedicated to social upliftment, community development, and supporting those in need.</p>
+        <a href="#contact" class="btn">JOIN OUR MISSION</a>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <h2 class="section-title">About Our Foundation</h2>
+        <p class="about-text">
+            <strong>Citizen Welfare Foundation</strong> is committed to driving positive social change. Our mission focuses on community welfare, education support, emergency relief, and youth leadership to build a stronger and self-reliant society.
+        </p>
+    </section>
+
+    <!-- Stats Section -->
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-number">1000+</div>
+            <p>Lives Impacted</p>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <p>Community Drives</p>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">200+</div>
+            <p>Volunteers</p>
+        </div>
+    </div>
+
+    <!-- Our Initiatives -->
+    <section class="section" id="work">
+        <h2 class="section-title">Key Initiatives</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>Community Welfare</h3>
+                <p>Supporting underprivileged families with relief drives, healthcare assistance, and essential resources.</p>
+            </div>
+            <div class="card">
+                <h3>Education & Empowerment</h3>
+                <p>Providing educational kits, guidance, and opportunities for children and youth to excel.</p>
+            </div>
+            <div class="card">
+                <h3>Disaster & Emergency Relief</h3>
+                <p>Rapid response drives during crises to deliver essential aid to affected communities.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <p><strong>CITIZEN WELFARE FOUNDATION</strong></p>
+        <p>Email: contact@citizenwelfare.org | Phone: +91 9876543210</p>
+        <p>&copy; 2026 Citizen Welfare Foundation. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
