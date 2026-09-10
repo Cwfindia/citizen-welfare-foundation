@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NGO Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Navigation Bar -->
+  <nav class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm">Admin Portal</div>
+      <span class="text-sm text-slate-500 font-medium">Finance & Management</span>
+    </div>
+    <div class="flex items-center space-x-4">
+      <span id="userEmail" class="text-xs text-slate-500"></span>
+      <button onclick="logout()" class="text-xs bg-red-50 text-red-600 hover:bg-red-100 font-semibold px-3 py-1.5 rounded-lg border border-red-200 transition">Logout</button>
+    </div>
+  </nav>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- KPI Cards: Hisab-Kitab Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Donations Received</p>
+        <p id="totalDonationText" class="text-2xl font-bold text-emerald-600 mt-2">₹0</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Money Spent (Kharcha)</p>
+        <p id="totalExpenseText" class="text-2xl font-bold text-rose-600 mt-2">₹0</p>
+      </div>
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Net Balance In Hand</p>
+        <p id="netBalanceText" class="text-2xl font-bold text-blue-600 mt-2">₹0</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex space-x-2 border-b border-slate-200 overflow-x-auto pb-1 text-sm font-medium">
+      <button onclick="switchTab('donations')" id="tab-donations" class="tab-btn px-4 py-2 border-b-2 border-blue-600 text-blue-600">Donations</button>
+      <button onclick="switchTab('expenses')" id="tab-expenses" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900">Expenses (Kharcha)</button>
+      <button onclick="switchTab('members')" id="tab-members" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900">Members</button>
+      <button onclick="switchTab('events')" id="tab-events" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900">Events</button>
+      <button onclick="switchTab('media')" id="tab-media" class="tab-btn px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900">Media News</button>
+    </div>
+
+    <!-- TAB 1: DONATIONS -->
+    <section id="section-donations" class="tab-content space-y-6">
+      <form onsubmit="addDonation(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Donor Name</label>
+          <input type="text" id="donorName" required class="w-full border rounded-lg p-2 text-sm" placeholder="Ramesh Sharma">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Amount (₹)</label>
+          <input type="number" id="donorAmount" required class="w-full border rounded-lg p-2 text-sm" placeholder="5000">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Payment Mode</label>
+          <select id="donorMode" class="w-full border rounded-lg p-2 text-sm">
+            <option value="UPI">UPI</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm">Add Donation</button>
+      </form>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+            <tr><th class="p-3">Date</th><th class="p-3">Donor</th><th class="p-3">Mode</th><th class="p-3">Amount</th></tr>
+          </thead>
+          <tbody id="donationsTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 2: EXPENSES -->
+    <section id="section-expenses" class="tab-content hidden space-y-6">
+      <form onsubmit="addExpense(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Expense Title</label>
+          <input type="text" id="expTitle" required class="w-full border rounded-lg p-2 text-sm" placeholder="Food Drive Groceries">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Amount (₹)</label>
+          <input type="number" id="expAmount" required class="w-full border rounded-lg p-2 text-sm" placeholder="1200">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Category</label>
+          <input type="text" id="expCategory" class="w-full border rounded-lg p-2 text-sm" placeholder="Food / Travel / Banner">
+        </div>
+        <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-2 rounded-lg text-sm">Add Expense</button>
+      </form>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+            <tr><th class="p-3">Date</th><th class="p-3">Item / Description</th><th class="p-3">Category</th><th class="p-3">Amount Spent</th></tr>
+          </thead>
+          <tbody id="expensesTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: MEMBERS -->
+    <section id="section-members" class="tab-content hidden space-y-6">
+      <form onsubmit="addMember(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="memName" required class="w-full border rounded-lg p-2 text-sm" placeholder="Aman Verma">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Role / Designation</label>
+          <input type="text" id="memRole" class="w-full border rounded-lg p-2 text-sm" placeholder="Volunteer / Core Member">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Phone Number</label>
+          <input type="text" id="memPhone" class="w-full border rounded-lg p-2 text-sm" placeholder="+91 9876543210">
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm">Add Member</button>
+      </form>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+            <tr><th class="p-3">Name</th><th class="p-3">Role</th><th class="p-3">Phone</th><th class="p-3">Status</th></tr>
+          </thead>
+          <tbody id="membersTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: EVENTS -->
+    <section id="section-events" class="tab-content hidden space-y-6">
+      <form onsubmit="addEvent(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Event Title</label>
+          <input type="text" id="evTitle" required class="w-full border rounded-lg p-2 text-sm" placeholder="Winter Blanket Distribution">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Event Date</label>
+          <input type="date" id="evDate" class="w-full border rounded-lg p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Location</label>
+          <input type="text" id="evLocation" class="w-full border rounded-lg p-2 text-sm" placeholder="Civil Lines">
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm">Create Event</button>
+      </form>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+            <tr><th class="p-3">Event</th><th class="p-3">Date</th><th class="p-3">Location</th></tr>
+          </thead>
+          <tbody id="eventsTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 5: MEDIA NEWS -->
+    <section id="section-media" class="tab-content hidden space-y-6">
+      <form onsubmit="addMedia(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Headline</label>
+          <input type="text" id="medHeadline" required class="w-full border rounded-lg p-2 text-sm" placeholder="Dainik Jagran Coverage">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Publication Name</label>
+          <input type="text" id="medPub" class="w-full border rounded-lg p-2 text-sm" placeholder="Amar Ujala / Times">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Link / Drive URL</label>
+          <input type="url" id="medLink" class="w-full border rounded-lg p-2 text-sm" placeholder="https://drive.google.com/...">
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm">Add Media</button>
+      </form>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 font-semibold border-b">
+            <tr><th class="p-3">Headline</th><th class="p-3">Publication</th><th class="p-3">Link</th></tr>
+          </thead>
+          <tbody id="mediaTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = "https://jbeyerazghziupoxqhjt.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_a71R-ERQzEN7SOSU4wtC3A_Zz1J7fFU";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkAuth() {
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) {
+        window.location.href = 'admin-login.html';
+      } else {
+        document.getElementById('userEmail').innerText = user.email;
+        loadAllData();
+      }
+    }
+
+    async function logout() {
+      await client.auth.signOut();
+      window.location.href = 'admin-login.html';
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('border-blue-600', 'text-blue-600');
+        el.classList.add('border-transparent', 'text-slate-600');
+      });
+      document.getElementById(`section-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.remove('border-transparent', 'text-slate-600');
+      activeBtn.classList.add('border-blue-600', 'text-blue-600');
+    }
+
+    async function loadAllData() {
+      // 1. Donations
+      const { data: donations } = await client.from('donations').select('*').order('created_at', { ascending: false });
+      let totalDonations = 0;
+      const dBody = document.getElementById('donationsTableBody');
+      dBody.innerHTML = '';
+      (donations || []).forEach(d => {
+        totalDonations += Number(d.amount);
+        dBody.innerHTML += `<tr><td class="p-3 text-slate-500">${new Date(d.created_at).toLocaleDateString()}</td><td class="p-3 font-medium">${d.donor_name}</td><td class="p-3">${d.payment_mode}</td><td class="p-3 font-semibold text-emerald-600">₹${d.amount}</td></tr>`;
+      });
+
+      // 2. Expenses
+      const { data: expenses } = await client.from('expenses').select('*').order('created_at', { ascending: false });
+      let totalExpenses = 0;
+      const eBody = document.getElementById('expensesTableBody');
+      eBody.innerHTML = '';
+      (expenses || []).forEach(e => {
+        totalExpenses += Number(e.amount);
+        eBody.innerHTML += `<tr><td class="p-3 text-slate-500">${new Date(e.created_at).toLocaleDateString()}</td><td class="p-3 font-medium">${e.title}</td><td class="p-3 text-slate-500">${e.category || '-'}</td><td class="p-3 font-semibold text-rose-600">₹${e.amount}</td></tr>`;
+      });
+
+      // KPI Calculations
+      document.getElementById('totalDonationText').innerText = `₹${totalDonations.toLocaleString('en-IN')}`;
+      document.getElementById('totalExpenseText').innerText = `₹${totalExpenses.toLocaleString('en-IN')}`;
+      const netBalance = totalDonations - totalExpenses;
+      const balanceEl = document.getElementById('netBalanceText');
+      balanceEl.innerText = `₹${netBalance.toLocaleString('en-IN')}`;
+      balanceEl.className = `text-2xl font-bold mt-2 ${netBalance >= 0 ? 'text-blue-600' : 'text-rose-600'}`;
+
+      // 3. Members
+      const { data: members } = await client.from('members').select('*').order('created_at', { ascending: false });
+      const mBody = document.getElementById('membersTableBody');
+      mBody.innerHTML = '';
+      (members || []).forEach(m => {
+        mBody.innerHTML += `<tr><td class="p-3 font-medium">${m.name}</td><td class="p-3">${m.role}</td><td class="p-3">${m.phone || '-'}</td><td class="p-3"><span class="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full">${m.status}</span></td></tr>`;
+      });
+
+      // 4. Events
+      const { data: events } = await client.from('events').select('*').order('created_at', { ascending: false });
+      const evBody = document.getElementById('eventsTableBody');
+      evBody.innerHTML = '';
+      (events || []).forEach(ev => {
+        evBody.innerHTML += `<tr><td class="p-3 font-medium">${ev.title}</td><td class="p-3 text-slate-500">${ev.event_date || '-'}</td><td class="p-3">${ev.location || '-'}</td></tr>`;
+      });
+
+      // 5. Media
+      const { data: media } = await client.from('media_news').select('*').order('created_at', { ascending: false });
+      const medBody = document.getElementById('mediaTableBody');
+      medBody.innerHTML = '';
+      (media || []).forEach(med => {
+        medBody.innerHTML += `<tr><td class="p-3 font-medium">${med.headline}</td><td class="p-3">${med.publication || '-'}</td><td class="p-3">${med.link ? `<a href="${med.link}" target="_blank" class="text-blue-600 hover:underline">View Article</a>` : '-'}</td></tr>`;
+      });
+    }
+
+    async function addDonation(e) {
+      e.preventDefault();
+      await client.from('donations').insert([{ donor_name: document.getElementById('donorName').value, amount: Number(document.getElementById('donorAmount').value), payment_mode: document.getElementById('donorMode').value }]);
+      document.getElementById('donorName').value = '';
+      document.getElementById('donorAmount').value = '';
+      loadAllData();
+    }
+
+    async function addExpense(e) {
+      e.preventDefault();
+      await client.from('expenses').insert([{ title: document.getElementById('expTitle').value, amount: Number(document.getElementById('expAmount').value), category: document.getElementById('expCategory').value }]);
+      document.getElementById('expTitle').value = '';
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expCategory').value = '';
+      loadAllData();
+    }
+
+    async function addMember(e) {
+      e.preventDefault();
+      await client.from('members').insert([{ name: document.getElementById('memName').value, role: document.getElementById('memRole').value, phone: document.getElementById('memPhone').value }]);
+      document.getElementById('memName').value = '';
+      document.getElementById('memPhone').value = '';
+      loadAllData();
+    }
+
+    async function addEvent(e) {
+      e.preventDefault();
+      await client.from('events').insert([{ title: document.getElementById('evTitle').value, event_date: document.getElementById('evDate').value, location: document.getElementById('evLocation').value }]);
+      document.getElementById('evTitle').value = '';
+      document.getElementById('evLocation').value = '';
+      loadAllData();
+    }
+
+    async function addMedia(e) {
+      e.preventDefault();
+      await client.from('media_news').insert([{ headline: document.getElementById('medHeadline').value, publication: document.getElementById('medPub').value, link: document.getElementById('medLink').value }]);
+      document.getElementById('medHeadline').value = '';
+      document.getElementById('medLink').value = '';
+      loadAllData();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
