@@ -77,52 +77,71 @@
   const donorAmount = urlParams.get('amount');
 
   if (donorName) {
-    document.getElementById('thankTitle').innerText = `Thank you for your donation, ${donorName}! 🙏`;
+    document.getElementById('thankTitle').innerText = "Thank you for your donation, " + donorName + "! 🙏";
     if (donorAmount) {
-      document.getElementById('thankSub').innerText = `We have recorded your contribution of ₹${donorAmount}. Your support empowers our community initiatives!`;
+      document.getElementById('thankSub').innerText = "We have recorded your contribution of ₹" + donorAmount + ". Your support empowers our community initiatives!";
     }
   }
 
   // 2. Supabase config
   const SUPABASE_URL = "https://catlfwebknujpccibizm.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhdGxmd2Via251anBjY2liaXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwOTYxMzMsImV4cCI6MjEwODY3MjEzM30.MHLuGsTj8Ul-qM8aYSq3yeTEbkmSgYTYUmNg7Q_TbrM";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // 3. Table data fetch karna
   async function fetchDonors() {
-    const { data, error } = await supabase
-      .from('donations')
-      .select('donor_name, amount, created_at')
-      .order('created_at', { ascending: false })
-      .limit(15);
-
     const tbody = document.getElementById('donationsList');
-    tbody.innerHTML = '';
 
-    if (error || !data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 15px; color: #94a3b8;">No donations recorded yet.</td></tr>';
-      return;
-    }
+    try {
+      const { data, error } = await supabaseClient
+        .from('donations')
+        .select('donor_name, amount, created_at')
+        .order('id', { ascending: false })
+        .limit(15);
 
-    data.forEach(item => {
-      const formattedDate = new Date(item.created_at).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
+      if (error) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Error: ' + error.message + '</td></tr>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 15px; color: #64748b;">No donations recorded yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      data.forEach(item => {
+        // Safe Date Parsing
+        let formattedDate = "Recent";
+        if (item.created_at) {
+          const cleanDate = new Date(item.created_at);
+          if (!isNaN(cleanDate)) {
+            formattedDate = cleanDate.toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            });
+          }
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${item.donor_name || 'Anonymous'}</strong></td>
+          <td><span class="amount-badge">₹${item.amount}</span></td>
+          <td style="color: #64748b; font-size: 13px;">${formattedDate}</td>
+        `;
+        tbody.appendChild(row);
       });
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${item.donor_name}</strong></td>
-        <td><span class="amount-badge">₹${item.amount}</span></td>
-        <td style="color: #64748b; font-size: 13px;">${formattedDate}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Script Error: ' + err.message + '</td></tr>';
+    }
   }
 
   fetchDonors();
 </script>
+  
 
 </body>
 </html>
