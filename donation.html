@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Donate - Citizen Welfare Foundation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f1f5f9; padding: 30px 15px; color: #1e293b; }
+    .card { max-width: 480px; margin: auto; background: #ffffff; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    h2 { text-align: center; color: #15803d; margin-bottom: 8px; }
+    p.desc { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+    .qr-container { text-align: center; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+    .qr-img { width: 190px; height: 190px; object-fit: contain; border-radius: 8px; margin-bottom: 8px; }
+    .upi-id-tag { display: inline-block; background: #e2e8f0; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 6px; color: #334155; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #334155; }
+    input { width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; }
+    input:focus { border-color: #16a34a; }
+    .btn-submit { width: 100%; background: #16a34a; color: white; padding: 13px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-submit:hover { background: #15803d; }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Support Our Cause</h2>
+  <p class="desc">Citizen Welfare Foundation</p>
+
+  <!-- QR Code Section -->
+  <div class="qr-container">
+    <!-- Yahan apni QR code ki image ya UPI link dalein -->
+    <img src="qr-code.png" alt="Scan to Pay QR" class="qr-img" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=your-upi-id@bank&pn=Citizen%20Welfare%20Foundation'">
+    <div>
+      <span class="upi-id-tag">Scan & Pay using any UPI App</span>
+    </div>
+  </div>
+
+  <!-- Form Details -->
+  <form id="donationForm">
+    <div class="form-group">
+      <label>Full Name *</label>
+      <input type="text" id="donorName" placeholder="Aapka Poora Naam" required>
+    </div>
+
+    <div class="form-group">
+      <label>Donated Amount (₹) *</label>
+      <input type="number" id="donorAmount" placeholder="e.g. 500" min="1" required>
+    </div>
+
+    <div class="form-group">
+      <label>Mobile Number (Optional)</label>
+      <input type="tel" id="donorPhone" placeholder="Mobile No.">
+    </div>
+
+    <div class="form-group">
+      <label>UPI Transaction / UTR Ref No. *</label>
+      <input type="text" id="txnId" placeholder="12-digit UTR ya Ref Number" required>
+    </div>
+
+    <button type="submit" id="submitBtn" class="btn-submit">Submit Donation</button>
+  </form>
+</div>
+
+<script>
+  // Supabase Details
+  const SUPABASE_URL = "YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById('donationForm');
+  const btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('donorName').value.trim();
+    const amount = document.getElementById('donorAmount').value;
+    const phone = document.getElementById('donorPhone').value.trim();
+    const txnId = document.getElementById('txnId').value.trim();
+
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
+
+    // Supabase table me entry
+    const { data, error } = await supabase
+      .from('donations')
+      .insert([
+        {
+          donor_name: name,
+          amount: parseFloat(amount),
+          phone: phone || null,
+          payment_id: txnId
+        }
+      ]);
+
+    if (error) {
+      alert("Submission error: " + error.message);
+      btn.innerText = "Submit Donation";
+      btn.disabled = false;
+    } else {
+      // Payment ke baad Thank You page par redirect
+      window.location.href = `thankyou.html?name=${encodeURIComponent(name)}&amount=${amount}`;
+    }
+  });
+</script>
+
+</body>
+</html>
