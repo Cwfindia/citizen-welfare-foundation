@@ -64,48 +64,67 @@
   </form>
 </div>
 
+<!-- Supabase Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
   // Supabase Details
   const SUPABASE_URL = "https://catlfwebknujpccibizm.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhdGxmd2Via251anBjY2liaXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwOTYxMzMsImV4cCI6MjEwODY3MjEzM30.MHLuGsTj8Ul-qM8aYSq3yeTEbkmSgYTYUmNg7Q_TbrM";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const form = document.getElementById('donationForm');
   const btn = document.getElementById('submitBtn');
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async function(e) {
+    // 1. Page ko reload hone se rokein
     e.preventDefault();
 
     const name = document.getElementById('donorName').value.trim();
-    const amount = document.getElementById('donorAmount').value;
-    const phone = document.getElementById('donorPhone').value.trim();
-    const txnId = document.getElementById('txnId').value.trim();
+    const amountVal = document.getElementById('donorAmount').value;
+    const phoneVal = document.getElementById('donorPhone').value.trim();
+    const txnVal = document.getElementById('txnId').value.trim();
+
+    if (!name || !amountVal) {
+      alert("Kripya apna naam aur amount bharein.");
+      return;
+    }
 
     btn.innerText = "Submitting...";
     btn.disabled = true;
 
-    // Supabase table me entry
-    const { data, error } = await supabase
-      .from('donations')
-      .insert([
-        {
-          donor_name: name,
-          amount: parseFloat(amount),
-          phone: phone || null,
-          payment_id: txnId
-        }
-      ]);
+    try {
+      // 2. Database me insert
+      const { data, error } = await client
+        .from('donations')
+        .insert([
+          {
+            donor_name: name,
+            amount: Number(amountVal),
+            phone: phoneVal || null,
+            payment_id: txnVal || 'DIRECT-UPI'
+          }
+        ]);
 
-    if (error) {
-      alert("Submission error: " + error.message);
+      if (error) {
+        // Agar database se koi error aaye toh popup aayega
+        alert("Database Error: " + error.message);
+        btn.innerText = "Submit Donation";
+        btn.disabled = false;
+      } else {
+        // 3. Thank you page par direct bhejein
+        window.location.href = "thankyou.html?name=" + encodeURIComponent(name) + "&amount=" + encodeURIComponent(amountVal);
+      }
+    } catch (err) {
+      alert("Error: " + err.message);
       btn.innerText = "Submit Donation";
       btn.disabled = false;
-    } else {
-      // Payment ke baad Thank You page par redirect
-      window.location.href = `thankyou.html?name=${encodeURIComponent(name)}&amount=${amount}`;
     }
   });
 </script>
+  
 
 </body>
 </html>
